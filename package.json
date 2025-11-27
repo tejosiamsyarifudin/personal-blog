@@ -13,7 +13,11 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
+    "@vitejs/plugin-react": "^5.1.1",
     "daisyui": "^5.5.5",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.6",
     "tailwindcss": "^4.1.17"
   }
 }
