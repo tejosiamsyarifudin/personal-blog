@@ -217,6 +217,7 @@ export default function HomePage() {
                       : "text-black hover:bg-white/20 hover:text-black"
                   }`}
                 >
+                  <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
                   Cyber World Adventure
                 </a>
               </div>
