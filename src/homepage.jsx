@@ -410,7 +410,7 @@ export default function HomePage() {
                     <div className="hover-3d">
                       <div className="card bg-base-100 shadow-xl w-64 py-6">
                         <div className="card-body text-center">
-                          <h2 className="text-xl font-bold">Server Status</h2>
+                          <h2 className="text-xl font-bold">SERVER STATUS</h2>
                           {serverOnline ? (
                             <span className="badge badge-success mt-2">
                               LIVE
