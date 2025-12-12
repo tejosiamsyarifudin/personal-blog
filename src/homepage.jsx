@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { articles } from "./data/articles.js";
+import { getUser, logout } from "./utils/auth.js";
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const [user, setUserState] = useState(null);
+  const [serverOnline, setServerOnline] = useState(false);
+
   const getInitialTheme = () => {
     if (typeof window === "undefined") return false;
     const storedTheme = window.localStorage.getItem("theme");
@@ -14,12 +19,56 @@ export default function HomePage() {
 
   const [isDarkTheme, setIsDarkTheme] = useState(getInitialTheme);
 
+  // Fetch server status indicator
+  useEffect(() => {
+    async function checkServer() {
+      try {
+        // Ubah ke API kamu
+        const res = await fetch("/api/health");
+        setServerOnline(res.ok);
+      } catch {
+        setServerOnline(false);
+      }
+    }
+    checkServer();
+    const interval = setInterval(checkServer, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Check for user on mount
+    setUserState(getUser());
+
+    // Listen for storage changes (e.g., when user logs in from another tab)
+    const handleStorageChange = () => {
+      setUserState(getUser());
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also listen for custom login event
+    window.addEventListener("userLogin", handleStorageChange);
+    window.addEventListener("userLogout", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("userLogin", handleStorageChange);
+      window.removeEventListener("userLogout", handleStorageChange);
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof document === "undefined") return;
     const theme = isDarkTheme ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", theme);
     window.localStorage.setItem("theme", theme);
   }, [isDarkTheme]);
+
+  const handleLogout = () => {
+    logout();
+    setUserState(null);
+    window.dispatchEvent(new Event("userLogout"));
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-base-200 flex flex-col">
@@ -103,7 +152,7 @@ export default function HomePage() {
                       : "text-white hover:bg-white/20 hover:text-white"
                   }`}
                 >
-                  Jason Chaskin
+                  Cyber World Adventure
                 </a>
               </div>
               <div className="navbar-center hidden lg:flex">
@@ -140,12 +189,12 @@ export default function HomePage() {
                 </ul>
               </div>
               <div
-                className={`navbar-end ${
+                className={`navbar-end flex items-center gap-3 ${
                   isDarkTheme ? "text-black" : "text-white"
                 }`}
               >
+                {/* Theme Toggle */}
                 <label className="swap swap-rotate">
-                  {/* this hidden checkbox controls the state */}
                   <input
                     type="checkbox"
                     className="theme-controller"
@@ -153,8 +202,6 @@ export default function HomePage() {
                     onChange={() => setIsDarkTheme((prev) => !prev)}
                     aria-label="Toggle dark mode"
                   />
-
-                  {/* sun icon */}
                   <svg
                     className="swap-off h-6 w-6 fill-current"
                     xmlns="http://www.w3.org/2000/svg"
@@ -162,8 +209,6 @@ export default function HomePage() {
                   >
                     <path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
                   </svg>
-
-                  {/* moon icon */}
                   <svg
                     className="swap-on h-6 w-6 fill-current"
                     xmlns="http://www.w3.org/2000/svg"
@@ -172,6 +217,161 @@ export default function HomePage() {
                     <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
                   </svg>
                 </label>
+
+                {/* Avatar Dropdown */}
+                <div className="dropdown dropdown-end">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className={`btn btn-ghost btn-circle avatar ${
+                      isDarkTheme ? "hover:bg-white/20" : "hover:bg-white/20"
+                    }`}
+                  >
+                    <div className="w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      {user ? (
+                        <span className="text-lg font-bold">
+                          {user.username?.charAt(0).toUpperCase() || "U"}
+                        </span>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <ul
+                    tabIndex={0}
+                    className={`dropdown-content menu rounded-box z-[1] mt-3 w-52 p-2 shadow-lg border ${
+                      isDarkTheme
+                        ? "bg-white text-black border-black/10"
+                        : "bg-black text-white border-white/10"
+                    }`}
+                  >
+                    {user ? (
+                      <>
+                        <li className="menu-title">
+                          <span>{user.username || user.email}</span>
+                        </li>
+                        <li>
+                          <a>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            </svg>
+                            Profile
+                          </a>
+                        </li>
+                        <li>
+                          <a>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            Settings
+                          </a>
+                        </li>
+                        <div className="divider my-1"></div>
+                        <li>
+                          <a onClick={handleLogout}>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                              />
+                            </svg>
+                            Logout
+                          </a>
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li>
+                          <Link to="/login">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                              />
+                            </svg>
+                            Login
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="/register">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                              />
+                            </svg>
+                            Register
+                          </Link>
+                        </li>
+                      </>
+                    )}
+                  </ul>
+                </div>
               </div>
             </div>
 
@@ -179,14 +379,52 @@ export default function HomePage() {
               <div className="hero min-h-[75vh] w-full">
                 <div className="hero-content text-center flex-col">
                   <h1 className="text-6xl text-white md:text-7xl font-extrabold leading-tight">
-                    Welcome to MyBlog
+                    Cyber World Adventure
                   </h1>
                   <p className="py-6 text-white text-base-content/70 max-w-2xl text-lg">
-                    ethereum foundation | opinions are my own but more than
-                    likely they come from Vitalik’s blog
-                    https://paragraph.xyz/@chaskin
+                    Digimon Master Online | Your complete guide to adventures in
+                    the digital world. Tips, strategies, and stories from Cyber
+                    World filled with extraordinary digital creatures.
                   </p>
-                  <button
+                  {/* Status Cards Row */}
+                  <div className="flex flex-col md:flex-row gap-6 mb-10">
+                    {/* User Status */}
+                    <div className="hover-3d">
+                      <div className="card bg-base-100 shadow-xl w-64 py-6">
+                        <div className="card-body text-center">
+                          <h2 className="text-xl font-bold">User Status</h2>
+                          {user ? (
+                            <span className="badge badge-success mt-2">
+                              ONLINE
+                            </span>
+                          ) : (
+                            <span className="badge badge-error mt-2">
+                              OFFLINE
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Live Server Indicator */}
+                    <div className="hover-3d">
+                      <div className="card bg-base-100 shadow-xl w-64 py-6">
+                        <div className="card-body text-center">
+                          <h2 className="text-xl font-bold">Server Status</h2>
+                          {serverOnline ? (
+                            <span className="badge badge-success mt-2">
+                              LIVE
+                            </span>
+                          ) : (
+                            <span className="badge badge-error mt-2">
+                              OFFLINE
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* <button
                     className="btn btn-primary btn-wide"
                     onClick={() =>
                       document
@@ -195,7 +433,7 @@ export default function HomePage() {
                     }
                   >
                     Get Started {">"}
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
@@ -432,7 +670,7 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="border-t border-base-300 bg-base-100 p-10 text-center">
         <p className="text-base-content/60">
-          © 2025 Jason chaskin | ethereum foundation
+          © 2025 Cyber World Adventure | Digimon Master Online
         </p>
       </footer>
     </div>
