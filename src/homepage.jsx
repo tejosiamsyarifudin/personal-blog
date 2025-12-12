@@ -292,7 +292,7 @@ export default function HomePage() {
                       isDarkTheme ? "hover:bg-white/20" : "hover:bg-white/20"
                     }`}
                   >
-                    <div className="w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <div className="w-10 rounded-full bg-primary flex items-center justify-center">
                       {user ? (
                         <span className="text-lg font-bold">
                           {user.username?.charAt(0).toUpperCase() || "U"}
