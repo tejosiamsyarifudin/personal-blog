@@ -158,7 +158,7 @@ export default function HomePage() {
                     tabIndex={0}
                     role="button"
                     className={`btn btn-ghost lg:hidden ${
-                      isDarkTheme ? "text-white" : "text-white"
+                      isDarkTheme ? "text-white" : "text-black"
                     }`}
                   >
                     <svg
@@ -214,7 +214,7 @@ export default function HomePage() {
                   className={`btn btn-ghost text-xl ${
                     isDarkTheme
                       ? "text-white hover:bg-white/20 hover:text-white"
-                      : "text-white hover:bg-white/20 hover:text-white"
+                      : "text-black hover:bg-white/20 hover:text-black"
                   }`}
                 >
                   Cyber World Adventure
@@ -223,7 +223,7 @@ export default function HomePage() {
               <div className="navbar-center hidden lg:flex">
                 <ul
                   className={`menu menu-horizontal px-1 ${
-                    isDarkTheme ? "text-white" : "text-white"
+                    isDarkTheme ? "text-white" : "text-black"
                   }`}
                 >
                   <li>
@@ -235,8 +235,8 @@ export default function HomePage() {
                       <ul
                         className={`p-2 ${
                           isDarkTheme
-                            ? "bg-white text-black"
-                            : "bg-black text-white"
+                            ? "bg-black text-black"
+                            : "bg-white text-black"
                         }`}
                       >
                         <li>
@@ -255,7 +255,7 @@ export default function HomePage() {
               </div>
               <div
                 className={`navbar-end flex items-center gap-3 ${
-                  isDarkTheme ? "text-white" : "text-white"
+                  isDarkTheme ? "text-white" : "text-black"
                 }`}
               >
                 {/* Theme Toggle */}
@@ -319,8 +319,8 @@ export default function HomePage() {
                     tabIndex={0}
                     className={`dropdown-content menu rounded-box z-[1] mt-3 w-52 p-2 shadow-lg border ${
                       isDarkTheme
-                        ? "bg-white text-black border-black/10"
-                        : "bg-black text-white border-white/10"
+                        ? "bg-black text-white border-white/10"
+                        : "bg-white text-black border-black/10"
                     }`}
                   >
                     {user ? (
