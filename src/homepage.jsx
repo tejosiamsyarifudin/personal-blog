@@ -142,9 +142,15 @@ export default function HomePage() {
           <div className="absolute inset-0 z-0 bg-base-200/60 mix-blend-multiply" />
           <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col gap-10">
             <div
-              className={`navbar fixed top-4 left-1/2 z-30 w-[min(90vw,1100px)] -translate-x-1/2 shadow-sm rounded-full px-8 transition-colors duration-300 ${
-                isDarkTheme ? "bg-white text-black" : "bg-black/90 text-white"
-              }`}
+              className={`navbar fixed top-4 left-1/2 z-30 w-[min(90vw,1100px)] 
+    -translate-x-1/2 shadow-lg rounded-full px-8
+    transition-colors duration-300 text-white`}
+              style={{
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                background: "rgba(255, 255, 255, 0.05)", // super transparent
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+              }}
             >
               <div className="navbar-start">
                 <div className="dropdown">
@@ -152,7 +158,7 @@ export default function HomePage() {
                     tabIndex={0}
                     role="button"
                     className={`btn btn-ghost lg:hidden ${
-                      isDarkTheme ? "text-black" : "text-white"
+                      isDarkTheme ? "text-white" : "text-white"
                     }`}
                   >
                     <svg
@@ -207,7 +213,7 @@ export default function HomePage() {
                 <a
                   className={`btn btn-ghost text-xl ${
                     isDarkTheme
-                      ? "text-black hover:bg-white/20 hover:text-black"
+                      ? "text-white hover:bg-white/20 hover:text-white"
                       : "text-white hover:bg-white/20 hover:text-white"
                   }`}
                 >
@@ -217,7 +223,7 @@ export default function HomePage() {
               <div className="navbar-center hidden lg:flex">
                 <ul
                   className={`menu menu-horizontal px-1 ${
-                    isDarkTheme ? "text-black" : "text-white"
+                    isDarkTheme ? "text-white" : "text-white"
                   }`}
                 >
                   <li>
@@ -249,7 +255,7 @@ export default function HomePage() {
               </div>
               <div
                 className={`navbar-end flex items-center gap-3 ${
-                  isDarkTheme ? "text-black" : "text-white"
+                  isDarkTheme ? "text-white" : "text-white"
                 }`}
               >
                 {/* Theme Toggle */}
