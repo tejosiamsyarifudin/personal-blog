@@ -181,8 +181,8 @@ export default function HomePage() {
                     tabIndex="-1"
                     className={`menu menu-sm dropdown-content rounded-box z-10 mt-3 w-52 p-2 shadow border ${
                       isDarkTheme
-                        ? "bg-white text-black border-black/10"
-                        : "bg-black text-white border-white/10"
+                        ? "bg-white text-black border-white/10"
+                        : "bg-white text-black border-white/10"
                     }`}
                   >
                     <li>
@@ -194,7 +194,7 @@ export default function HomePage() {
                         className={`p-2 ${
                           isDarkTheme
                             ? "bg-white text-black"
-                            : "bg-black text-white"
+                            : "bg-white text-black"
                         }`}
                       >
                         <li>
@@ -235,12 +235,12 @@ export default function HomePage() {
                       <ul
                         className={`p-2 ${
                           isDarkTheme
-                            ? "bg-black text-black"
+                            ? "bg-white text-black"
                             : "bg-white text-black"
                         }`}
                       >
                         <li>
-                          <a>Submenu 1</a>
+                          <a>Submenu 12</a>
                         </li>
                         <li>
                           <a>Submenu 2</a>
