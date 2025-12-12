@@ -392,7 +392,7 @@ export default function HomePage() {
                     <div className="hover-3d">
                       <div className="card bg-base-100 shadow-xl w-64 py-6">
                         <div className="card-body text-center">
-                          <h2 className="text-xl font-bold">User Status</h2>
+                          <h2 className="text-xl font-bold">USER STATUS</h2>
                           {user ? (
                             <span className="badge badge-success mt-2">
                               ONLINE
