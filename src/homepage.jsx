@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { articles } from "./data/articles.js";
 import { getUser, logout } from "./utils/auth.js";
@@ -7,6 +7,8 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [user, setUserState] = useState(null);
   const [serverOnline, setServerOnline] = useState(false);
+  const audioRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(false);
 
   const getInitialTheme = () => {
     if (typeof window === "undefined") return false;
@@ -63,6 +65,62 @@ export default function HomePage() {
     window.localStorage.setItem("theme", theme);
   }, [isDarkTheme]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Step 1 — mulai dalam kondisi mute (browser allow autoplay)
+    audio.volume = 0;
+    audio.muted = true;
+
+    const tryPlay = () => {
+      audio
+        .play()
+        .then(() => {
+          // Step 2 — unmute setelah play
+          audio.muted = false;
+
+          // Step 3 — fade in halus ke volume 0.5
+          let v = 0;
+          const fade = setInterval(() => {
+            if (v < 0.5) {
+              v += 0.02;
+              audio.volume = v;
+            } else {
+              clearInterval(fade);
+            }
+          }, 100);
+        })
+        .catch(() => {
+          console.log("Autoplay blocked — waiting for user click");
+        });
+    };
+
+    // Coba play langsung
+    tryPlay();
+
+    // Jika gagal → play saat user klik di mana saja
+    const handleUserGesture = () => {
+      tryPlay();
+      window.removeEventListener("click", handleUserGesture);
+      window.removeEventListener("touchstart", handleUserGesture);
+    };
+
+    window.addEventListener("click", handleUserGesture);
+    window.addEventListener("touchstart", handleUserGesture);
+
+    return () => {
+      window.removeEventListener("click", handleUserGesture);
+      window.removeEventListener("touchstart", handleUserGesture);
+    };
+  }, []);
+
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = !audioRef.current.muted;
+    setIsMuted(audioRef.current.muted);
+  };
+
   const handleLogout = () => {
     logout();
     setUserState(null);
@@ -72,7 +130,36 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-base-200 flex flex-col">
+      <audio ref={audioRef} src="music.mp3" loop />
       <main className="flex-1 pb-32">
+        <div className="fab">
+          <label className="swap btn btn-circle" onClick={toggleMute}>
+            <input type="checkbox" checked={!isMuted} readOnly />
+
+            {/* volume on icon */}
+            <svg
+              className="swap-on fill-current"
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+            >
+              <path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+            </svg>
+
+            {/* volume off icon */}
+            <svg
+              className="swap-off fill-current"
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3,9H7L12,4V20L7,15H3V9M16.59,12L14,9.41L15.41,8L18,10.59L20.59,8L22,9.41L19.41,12L22,14.59L20.59,16L18,13.41L15.41,16L14,14.59L16.59,12Z" />
+            </svg>
+          </label>
+        </div>
+
         <div
           className="preview relative overflow-hidden bg-cover bg-top px-4 pt-4 pb-24"
           style={{ backgroundImage: "url('/background.jpeg')" }}
@@ -388,42 +475,71 @@ export default function HomePage() {
                   </p>
                   {/* Status Cards Row */}
                   <div className="flex flex-col md:flex-row gap-6 mb-10">
-                    {/* User Status */}
+                    {/* User Status – Glass Card */}
                     <div className="hover-3d">
-                      <div className="card bg-base-100 shadow-xl w-64 py-6">
+                      <div
+                        className="w-64 py-6 rounded-2xl shadow-xl"
+                        style={{
+                          backdropFilter: "blur(16px)",
+                          WebkitBackdropFilter: "blur(16px)",
+                          background: "rgba(255, 255, 255, 0.01)",
+                          border: "1px solid rgba(255, 255, 255, 0.25)",
+                        }}
+                      >
                         <div className="card-body text-center">
-                          <h2 className="text-xl font-bold">USER STATUS</h2>
+                          <h2 className="text-xl font-bold text-white drop-shadow">
+                            USER STATUS
+                          </h2>
                           {user ? (
-                            <span className="badge badge-success mt-2">
-                              ONLINE
-                            </span>
+                            <div className="mt-2 flex justify-center">
+                              <span className="badge badge-success mt-3 text-sm px-4 py-2 text-center">
+                                ONLINE
+                              </span>
+                            </div>
                           ) : (
-                            <span className="badge badge-error mt-2">
-                              OFFLINE
-                            </span>
+                            <div className="mt-2 flex justify-center">
+                              <span className="badge badge-error mt-3 text-sm px-4 py-2 text-center">
+                                OFFLINE
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Live Server Indicator */}
+                    {/* Server Status – Glass Card */}
                     <div className="hover-3d">
-                      <div className="card bg-base-100 shadow-xl w-64 py-6">
+                      <div
+                        className="w-64 py-6 rounded-2xl shadow-xl"
+                        style={{
+                          backdropFilter: "blur(16px)",
+                          WebkitBackdropFilter: "blur(16px)",
+                          background: "rgba(255, 255, 255, 0.01)",
+                          border: "1px solid rgba(255, 255, 255, 0.25)",
+                        }}
+                      >
                         <div className="card-body text-center">
-                          <h2 className="text-xl font-bold">SERVER STATUS</h2>
+                          <h2 className="text-xl font-bold text-white drop-shadow">
+                            SERVER STATUS
+                          </h2>
                           {serverOnline ? (
-                            <span className="badge badge-success mt-2">
-                              LIVE
-                            </span>
+                            <div className="mt-2 flex justify-center">
+                              <span className="badge badge-success mt-3 text-sm px-4 py-2 text-center">
+                                LIVE
+                              </span>
+                            </div>
                           ) : (
-                            <span className="badge badge-error mt-2">
-                              OFFLINE
-                            </span>
+                            <div className="mt-2 flex justify-center">
+                              <span className="badge badge-error mt-3 text-sm px-4 py-2 text-center">
+                                OFFLINE
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>
                     </div>
                   </div>
+
                   {/* <button
                     className="btn btn-primary btn-wide"
                     onClick={() =>
